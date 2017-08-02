@@ -1,7 +1,8 @@
 var nem = require("../../build/index.js").default;
+const fs = require('fs');
 
 // Create an NIS endpoint object
-var endpoint = nem.model.objects.create("endpoint")(nem.model.nodes.mainnet[0].uri, nem.model.nodes.defaultPort);
+var endpoint = nem.model.objects.create("endpoint")(nem.model.nodes.defaultTestnet, nem.model.nodes.defaultPort);
 
 // Address we'll use in some queries
 var address = "NAEGC6G4IMTUYR7IRE26UTAVBRPL2HQG2VPMEJVN";
@@ -15,7 +16,7 @@ const exchanges = [
   'ND7HQ7-3YTGNE-YJT6PP-VOR6GM-2RHTVJ-TNRG2N-W5B6', //Btc38
   'NDKTFW-VFDHDU-L4L3GX-Q32RVO-HQ5IJ5-DEAYHO-J7YS', //BTER
   'NC2MYW-XT3YOS-AIBTWB-CW7ZKC-E4R4NI-KYCF7S-76UC', //BTER
-]
+];
 
 let voteArray = [];
 let txId = 0;
@@ -26,21 +27,20 @@ getTxAll(lastHash);
 
 function getTxAll(lastHash) {
   nem.com.requests.account.transactions.all(endpoint, address, lastHash, null).then(function(res) {
-    let result = res.data;
-
-    for (let i = 0; i < result.length; i++) {
+    for (let i = 0; i < res.data.length; i++) {
       txId++;
       let vote = {};
       vote.index = txId;
       vote.timeStamp = res.data[i].transaction.timeStamp;
-      vote.signerAddr = nem.utils.format.pubToAddress(res.data[i].transaction.signer, nem.model.network.data.mainnet.id);
+      vote.voterAddress = nem.utils.format.pubToAddress(res.data[i].transaction.signer, nem.model.network.data.mainnet.id);
       vote.txHash = res.data[i].meta.hash.data;
       voteArray.push(vote);
       checkExchangeAddress(vote);
     }
 
-    if (result.length < 25) {
+    if (res.data.length < 25) {
       console.dir(exchangeVote, {colors: true});
+      exportResult();
       return;
     }
     else {
@@ -56,8 +56,15 @@ function getTxAll(lastHash) {
 
 function checkExchangeAddress(vote) {
   for (let i = 0; i < exchanges.length; i++) {
-    if (vote.signerAddr == nem.model.address.clean(exchanges[i])) {
+    if (vote.voterAddress == nem.model.address.clean(exchanges[i])) {
       exchangeVote.push(vote);
     }
   }
+}
+
+function exportResult() {
+  fs.writeFile('votes.json', JSON.stringify(voteArray), (err) => {
+    if (err) throw err;
+    console.log('The file has been saved!');
+  });
 }
