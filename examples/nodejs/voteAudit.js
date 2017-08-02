@@ -26,7 +26,7 @@ let exchangeVote = [];
 getTxAll(lastHash);
 
 function getTxAll(lastHash) {
-  nem.com.requests.account.transactions.all(endpoint, address, lastHash, null).then(function(res) {
+  nem.com.requests.account.transactions.incoming(endpoint, address, lastHash, null).then(function(res) {
     for (let i = 0; i < res.data.length; i++) {
       txId++;
       let vote = {};
@@ -39,7 +39,21 @@ function getTxAll(lastHash) {
     }
 
     if (res.data.length < 25) {
-      console.dir(exchangeVote, {colors: true});
+
+      let uniqueNames = [];
+      for(i = 0; i< voteArray.length; i++){
+          if(uniqueNames.indexOf(voteArray[i].voterAddress) === -1){
+              uniqueNames.push(voteArray[i].voterAddress);
+          }
+        }
+      console.log(`Total votes to ${address}: ${uniqueNames.length}`);
+      if (exchangeVote.length) {
+        console.log("Accounts from XEM exchanges have voted in this poll: ");
+        console.dir(exchangeVote, {colors: true});
+      }
+      else {
+        console.log("No XEM exchange accounts have voted for this option");
+      }
       exportResult();
       return;
     }
@@ -65,6 +79,6 @@ function checkExchangeAddress(vote) {
 function exportResult() {
   fs.writeFile('votes.json', JSON.stringify(voteArray), (err) => {
     if (err) throw err;
-    console.log('The file has been saved!');
+    console.log('The output has been saved!');
   });
 }
