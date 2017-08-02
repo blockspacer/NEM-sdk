@@ -2,7 +2,7 @@ var nem = require("../../build/index.js").default;
 const fs = require('fs');
 
 // Create an NIS endpoint object
-var endpoint = nem.model.objects.create("endpoint")(nem.model.nodes.defaultTestnet, nem.model.nodes.defaultPort);
+var endpoint = nem.model.objects.create("endpoint")(nem.model.nodes.defaultMainnet, nem.model.nodes.defaultPort);
 
 // Address we'll use in some queries
 var address = "NAEGC6G4IMTUYR7IRE26UTAVBRPL2HQG2VPMEJVN";
