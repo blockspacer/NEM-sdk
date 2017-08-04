@@ -10,7 +10,7 @@ let defaultTestnet = 'http://bigalice2.nem.ninja';
  *
  * @type {string}
  */
-let defaultMainnet = 'http://alice6.nem.ninja';
+let defaultMainnet = 'http://alice3.nem.ninja';
 
 /**
  * The default mijin node

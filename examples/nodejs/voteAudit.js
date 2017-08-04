@@ -1,11 +1,14 @@
-var nem = require("../../build/index.js").default;
+let nem = require("../../build/index.js").default;
+let json2csv = require('json2csv');
 const fs = require('fs');
+let batchImp = require("./batchImportance.js");
 
 // Create an NIS endpoint object
-var endpoint = nem.model.objects.create("endpoint")(nem.model.nodes.defaultMainnet, nem.model.nodes.defaultPort);
+let endpoint = nem.model.objects.create("endpoint")(nem.model.nodes.defaultMainnet, nem.model.nodes.defaultPort);
 
-// Address we'll use in some queries
-var address = "NAEGC6G4IMTUYR7IRE26UTAVBRPL2HQG2VPMEJVN";
+// Poll option addresses
+let address = "NAEGC6G4IMTUYR7IRE26UTAVBRPL2HQG2VPMEJVN";
+// let address = "NB2GIT5SVEYTGZUX33Y6RT26IHAI5SENEJJAZHYK";
 
 const exchanges = [
   'NBZMQO-7ZPBYN-BDUR7F-75MAKA-2S3DHD-CIFG77-5N3D', //Poloniex
@@ -19,53 +22,81 @@ const exchanges = [
 ];
 
 let voteArray = [];
+let voterAddressArray = [];
+let duplicateArray = [];
 let txId = 0;
+let importanceAccumulator = 0;
+let balanceAccumulator = 0;
 let lastHash = null;
 let exchangeVote = [];
+
+//Block #1220816 (timeStamp: 73928852) is the last block
+//before poll close (timeStamp: 73929215)
+let importanceAtHeight = 1220816;
 
 getTxAll(lastHash);
 
 function getTxAll(lastHash) {
   nem.com.requests.account.transactions.incoming(endpoint, address, lastHash, null).then(function(res) {
     for (let i = 0; i < res.data.length; i++) {
-      txId++;
       let vote = {};
       vote.index = txId;
       vote.timeStamp = res.data[i].transaction.timeStamp;
       vote.voterAddress = nem.utils.format.pubToAddress(res.data[i].transaction.signer, nem.model.network.data.mainnet.id);
       vote.txHash = res.data[i].meta.hash.data;
-      voteArray.push(vote);
-      checkExchangeAddress(vote);
+      txId++;
+
+      if(voterAddressArray.indexOf(vote.voterAddress) === -1){
+        checkExchangeAddress(vote);
+        voterAddressArray.push(vote.voterAddress);
+        voteArray.push(vote);
+      }
+      else {
+        duplicateArray.push(vote);
+        txId--;
+      }
     }
 
     if (res.data.length < 25) {
-
-      let uniqueNames = [];
-      for(i = 0; i< voteArray.length; i++){
-          if(uniqueNames.indexOf(voteArray[i].voterAddress) === -1){
-              uniqueNames.push(voteArray[i].voterAddress);
-          }
-        }
-      console.log(`Total votes to ${address}: ${uniqueNames.length}`);
-      if (exchangeVote.length) {
-        console.log("Accounts from XEM exchanges have voted in this poll: ");
-        console.dir(exchangeVote, {colors: true});
-      }
-      else {
-        console.log("No XEM exchange accounts have voted for this option");
-      }
-      exportResult();
-      return;
+      console.log(`Total votes to ${address}: ${txId}`);
+      return getImportance(voterAddressArray);
+      // console.dir(batchImp.arrayToObjArray(voterAddressArray), {colors: true});
     }
     else {
       lastHash = voteArray[voteArray.length-1].txHash;
       getTxAll(lastHash);
     }
 
-  }, function(err) {
-    console.error(err);
+    }, function(err) {
+      console.error(err);
+    });
+
+}
+
+function getImportance(arr) {
+  let arrObj = batchImp.arrayToObjArray(arr);
+  batchImp.batchImportance(arrObj, importanceAtHeight, importanceAtHeight, function(res){
+    for (let i = 0; i < res.data.length; i++) {
+      importanceAccumulator += res.data[i].data[0].importance;
+      voteArray[i].importance = res.data[i].data[0].importance;
+      balanceAccumulator += res.data[i].data[0].balance;
+      voteArray[i].balance = res.data[i].data[0].balance;
+    }
+      displayResult();
+      exportResult();
   });
 
+}
+
+function checkDuplicate(vote) {
+  return new Promise(function(resolve, reject) {
+    if(voteArray.indexOf(vote.voterAddress) === -1){
+      return resolve();
+    }
+    else {
+      return reject("Duplicate found");
+    }
+  });
 }
 
 function checkExchangeAddress(vote) {
@@ -77,8 +108,43 @@ function checkExchangeAddress(vote) {
 }
 
 function exportResult() {
-  fs.writeFile('votes.json', JSON.stringify(voteArray), (err) => {
+  fs.writeFile("votes.json", JSON.stringify(voteArray), (err) => {
     if (err) throw err;
-    console.log('The output has been saved!');
   });
+
+  let fields = ["index", "timeStamp", "voterAddress", "txHash", "importance", "balance"];
+  let csv = json2csv({ data: voteArray, fields: fields });
+  fs.writeFile('votes.csv', csv, function(err) {
+    if (err) throw err;
+    console.log(`Output has been saved`);
+  });
+
+  if(duplicateArray.length) {
+    fields = ["index", "timeStamp", "voterAddress", "txHash"];
+    csv = json2csv({ data: duplicateArray, fields: fields });
+    fs.writeFile('duplicates.csv', csv, function(err) {
+      if (err) throw err;
+      console.log(`Output has been saved`);
+    });
+  }
+
+}
+
+function displayResult() {
+  console.log(`\nSum of voters' importance and balance at blockHeight: ${importanceAtHeight} ...`)
+  console.log(`Total importance: ${importanceAccumulator}`);
+  console.log(`Total balance: ${balanceAccumulator/1000} XEM\n`);
+
+  if (exchangeVote.length) {
+    console.log("Accounts from XEM exchanges have voted in this poll: ");
+    console.dir(exchangeVote, {colors: true});
+  }
+  else {
+    console.log("No XEM exchange accounts have voted for this option");
+  }
+
+  if(duplicateArray.length) {
+    console.log("\nDuplicates found and deleted from result: ");
+    console.dir(duplicateArray, {colors: true});
+  }
 }
