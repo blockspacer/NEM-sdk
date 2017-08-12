@@ -7,7 +7,7 @@ let batchImp = require("./batchImportance.js");
 let endpoint = nem.model.objects.create("endpoint")(nem.model.nodes.defaultMainnet, nem.model.nodes.defaultPort);
 
 // Poll option addresses
-// let address = "NAEGC6G4IMTUYR7IRE26UTAVBRPL2HQG2VPMEJVN";
+let address = "NAEGC6G4IMTUYR7IRE26UTAVBRPL2HQG2VPMEJVN";
 // let address = "NB2GIT5SVEYTGZUX33Y6RT26IHAI5SENEJJAZHYK";
 
 const exchanges = [
