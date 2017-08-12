@@ -2,15 +2,17 @@
   {
     "index": 0,
     "timeStamp": 73552293,
-    "voterAddress": "NBBR3O2A4W5HJCXXVVHPFWDKPSWPOHB2UKEWYGQ6",
     "txHash": "4a2c89d72a3d9e92101a2283e4f6091c396620434613f5680c0eb68b3dafbc01",
-    "importance": 0.00037398980967141734
+    "voterAddress": "NBBR3O2A4W5HJCXXVVHPFWDKPSWPOHB2UKEWYGQ6",
+    "importance": 0.0003748289369600688,
+    "balance": 3650627619312
   },
   {
     "index": 1,
     "timeStamp": 73537877,
-    "voterAddress": "NBDQU6C5C4HAVWIWQRB4RVPEIVS4455UENXFH3TF",
     "txHash": "473bfd80988ce64f922b81d1c7355c373108afa31b313914cdd28a4c6b152e93",
-    "importance": 0
+    "voterAddress": "NBDQU6C5C4HAVWIWQRB4RVPEIVS4455UENXFH3TF",
+    "importance": 0,
+    "balance": 0
   }
 ]
