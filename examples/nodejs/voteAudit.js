@@ -7,7 +7,7 @@ let batchImp = require("./batchImportance.js");
 let endpoint = nem.model.objects.create("endpoint")(nem.model.nodes.defaultMainnet, nem.model.nodes.defaultPort);
 
 // Poll option addresses
-let address = "NAEGC6G4IMTUYR7IRE26UTAVBRPL2HQG2VPMEJVN";
+// let address = "NAEGC6G4IMTUYR7IRE26UTAVBRPL2HQG2VPMEJVN";
 // let address = "NB2GIT5SVEYTGZUX33Y6RT26IHAI5SENEJJAZHYK";
 
 const exchanges = [
@@ -21,6 +21,8 @@ const exchanges = [
   'NC2MYW-XT3YOS-AIBTWB-CW7ZKC-E4R4NI-KYCF7S-76UC', //BTER
   'NCQJR647FLD7UM6FFVL4Z7DYLWJ3I6OGV5TMALUO', //Changelly
   'NBLQ6P-E7Z5CV-ANJNXG-OR74UQ-LOJ2YM-GJJOZ4-YFAQ', //Changelly
+  'NAGJG3-QFWYZ3-7LMI7I-QPSGQN-YADGSJ-ZGJRD2-DIYA', //Zaif
+  'NC3BI3-DNMR2P-GEOOMP-2NKXQG-SAKMS7-GYRKVA-5CSZ', //Coincheck
 ];
 
 let voteArray = [];
