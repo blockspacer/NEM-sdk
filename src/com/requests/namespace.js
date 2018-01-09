@@ -57,7 +57,7 @@ let mosaicDefinition = function(endpoint, namespaceId, mosaicId){
 	    url: Helpers.formatEndpoint(endpoint) + '/mosaic/definition',
 	    method: 'GET',
 	    headers: Headers.urlEncoded,
-	    qs: {'mosaicId': namespaceId + "%3A" + mosaicId}
+	    qs: {'mosaicId': namespaceId + ":" + mosaicId}
 	}
 	// Send the request
 	return Send(options);
