@@ -43,6 +43,27 @@ let mosaicDefinitions = function(endpoint, id){
 }
 
 /**
+ * Gets mosaic definitions by namespace and mosaic
+ *
+ * @param {object} endpoint - An NIS endpoint object
+ * @param {string} namespaceId - A namespace id
+ * @param {string} mosaicId - A namespace id
+ *
+ * @return {object} - [MosaicDefinition]{@link http://bob.nem.ninja/docs/#mosaicDefinition} object
+ */
+let mosaicDefinition = function(endpoint, namespaceId, mosaicId){
+	// Configure the request
+	var options = {
+	    url: Helpers.formatEndpoint(endpoint) + '/mosaic/definition',
+	    method: 'GET',
+	    headers: Headers.urlEncoded,
+	    qs: {'mosaicId': namespaceId + "%3A" + mosaicId}
+	}
+	// Send the request
+	return Send(options);
+}
+
+/**
  * Gets the namespace with given id.
  *
  * @param {object} endpoint - An NIS endpoint object
@@ -65,5 +86,6 @@ let info = function(endpoint, id) {
 module.exports = {
 	roots,
 	mosaicDefinitions,
+	mosaicDefinition,
 	info
 }
